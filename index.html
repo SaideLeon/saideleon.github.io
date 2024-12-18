@@ -19,6 +19,7 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <div id="root" class="min-vh-100 bg-light"></div>
@@ -237,6 +238,9 @@ React.useEffect(() => {
                         <p className="mb-5 lead text-muted">
                             Calcule o preço ideal para sua assinatura ou serviço
                         </p>
+                        <h1 className="text-3xl font-bold underline">
+    Hello world!
+  </h1>
                         <button 
                             onClick={() => history.push('/calc')}
                             className="btn btn-primary btn-lg"
