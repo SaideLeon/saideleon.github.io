@@ -3,206 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <title>Calculadora de Preço Ideal</title>
-    
-    <!-- React e ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-    
-    <!-- React Router -->
     <script src="https://unpkg.com/react-router-dom@5.2.0/umd/react-router-dom.min.js"></script>
-    
-    <!-- Babel para transformar JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
 
-    <div id="root" class="container mx-auto px-4 py-8 max-w-xl w-full">
-        <script type="text/babel">
-            // Função de cálculo (simulando backend)
-            function calcularPrecoIdeal(custoFixo, margemLucro, assinantes) {
-                if (!custoFixo || !margemLucro || !assinantes) {
-                    throw new Error('Todos os campos são obrigatórios.');
+    <div id="root" class="w-full max-w-lg px-4"></div>
+
+    <script type="text/babel">
+        // Função de cálculo
+        function calcularPrecoIdeal(custoFixo, margemLucro, assinantes) {
+            if (!custoFixo || !margemLucro || !assinantes) {
+                throw new Error('Todos os campos são obrigatórios.');
+            }
+            const precoIdeal = (custoFixo / assinantes) * (1 + margemLucro / 100);
+            return precoIdeal.toFixed(2);
+        }
+
+        // Componente de Cálculo
+        function PrecoIdeal() {
+            const [custoFixo, setCustoFixo] = React.useState('');
+            const [margemLucro, setMargemLucro] = React.useState('');
+            const [assinantes, setAssinantes] = React.useState('');
+            const [resultado, setResultado] = React.useState(null);
+            const [erro, setErro] = React.useState(null);
+
+            const handleCalcular = (e) => {
+                e.preventDefault();
+                try {
+                    const preco = calcularPrecoIdeal(
+                        parseFloat(custoFixo),
+                        parseFloat(margemLucro),
+                        parseFloat(assinantes)
+                    );
+                    setResultado(preco);
+                    setErro(null);
+                } catch (error) {
+                    setErro(error.message);
+                    setResultado(null);
                 }
+            };
 
-                const precoIdeal = (custoFixo / assinantes) * (1 + margemLucro / 100);
-                return precoIdeal.toFixed(2);
-            }
-
-            // Componente de Cálculo de Preço Ideal
-            function PrecoIdeal() {
-                const [custoFixo, setCustoFixo] = React.useState('');
-                const [margemLucro, setMargemLucro] = React.useState('');
-                const [assinantes, setAssinantes] = React.useState('');
-                const [resultado, setResultado] = React.useState(null);
-                const [erro, setErro] = React.useState(null);
-                const [graficoData, setGraficoData] = React.useState(null);
-
-                const handleCalcular = (e) => {
-                    e.preventDefault();
-                    try {
-                        const preco = calcularPrecoIdeal(
-                            parseFloat(custoFixo), 
-                            parseFloat(margemLucro), 
-                            parseFloat(assinantes)
-                        );
-                        setResultado(preco);
-                        setErro(null);
-
-                        // Atualizando o gráfico com o resultado
-                        setGraficoData({
-                            labels: ['Preço Ideal'],
-                            datasets: [{
-                                label: 'Preço Ideal (R$)',
-                                data: [preco],
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1,
-                            }]
-                        });
-                    } catch (error) {
-                        setErro(error.message);
-                        setResultado(null);
-                    }
-                };
-
-                React.useEffect(() => {
-                    if (graficoData) {
-                        const ctx = document.getElementById('precoIdealChart').getContext('2d');
-                        if (window.myChart) {
-                            window.myChart.destroy();
-                        }
-
-                        window.myChart = new Chart(ctx, {
-                            type: 'bar',
-                            data: graficoData,
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        type: 'category',
-                                    },
-                                    y: {
-                                        ticks: {
-                                            callback: function(value) {
-                                                return 'R$ ' + value;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    return () => {
-                        if (window.myChart) {
-                            window.myChart.destroy();
-                        }
-                    };
-                }, [graficoData]);
-
-                return (
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h1 className="text-2xl font-semibold text-center mb-4">Calculadora de Preço Ideal</h1>
-                        <form onSubmit={handleCalcular} className="space-y-4">
-                            <div>
-                                <label className="block text-gray-700">Custo Fixo (R$)</label>
-                                <input 
-                                    type="number" 
-                                    value={custoFixo}
-                                    onChange={(e) => setCustoFixo(e.target.value)}
-                                    placeholder="Digite o custo fixo"
-                                    className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-700">Margem de Lucro (%)</label>
-                                <input 
-                                    type="number" 
-                                    value={margemLucro}
-                                    onChange={(e) => setMargemLucro(e.target.value)}
-                                    placeholder="Digite a margem de lucro"
-                                    className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-700">Número de Assinantes</label>
-                                <input 
-                                    type="number" 
-                                    value={assinantes}
-                                    onChange={(e) => setAssinantes(e.target.value)}
-                                    placeholder="Digite o número de assinantes"
-                                    className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
-                            <button 
-                                type="submit" 
-                                className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                Calcular Preço Ideal
-                            </button>
-                        </form>
-
-                        {erro && (
-                            <div className="mt-4 text-red-500">{erro}</div>
-                        )}
-
-                        {resultado && (
-                            <div className="mt-4 text-green-500">
-                                <strong>Preço Ideal:</strong> R$ {resultado}
-                            </div>
-                        )}
-
-                        {resultado && graficoData && (
-                            <div className="mt-4">
-                                <canvas id="precoIdealChart"></canvas>
-                            </div>
-                        )}
-                    </div>
-                );
-            }
-
-            // Página Inicial
-            function LandingPage() {
-                const history = ReactRouterDOM.useHistory();
-                return (
-                    <div className="text-center text-white">
-                        <h1 className="text-4xl font-bold mb-4">Bem-vindo à Calculadora de Preço Ideal</h1>
-                        <p className="mb-5">Calcule o preço ideal para sua assinatura ou serviço</p>
-                        <button 
-                            onClick={() => history.push('/calc')}
-                            className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            return (
+                <div className="bg-white p-6 rounded-lg shadow-lg space-y-4">
+                    <h1 className="text-2xl font-bold text-center text-gray-800">Calculadora de Preço Ideal</h1>
+                    <form onSubmit={handleCalcular} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Custo Fixo (R$)</label>
+                            <input
+                                type="number"
+                                value={custoFixo}
+                                onChange={(e) => setCustoFixo(e.target.value)}
+                                placeholder="Digite o custo fixo"
+                                className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Margem de Lucro (%)</label>
+                            <input
+                                type="number"
+                                value={margemLucro}
+                                onChange={(e) => setMargemLucro(e.target.value)}
+                                placeholder="Digite a margem de lucro"
+                                className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Número de Assinantes</label>
+                            <input
+                                type="number"
+                                value={assinantes}
+                                onChange={(e) => setAssinantes(e.target.value)}
+                                placeholder="Digite o número de assinantes"
+                                className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
                         >
-                            Iniciar Cálculo
+                            Calcular
                         </button>
-                    </div>
-                );
-            }
+                    </form>
 
-            // Componente Principal com Roteamento
-            function App() {
-                return (
-                    <ReactRouterDOM.HashRouter>
-                        <ReactRouterDOM.Switch>
-                            <ReactRouterDOM.Route exact path="/" component={LandingPage} />
-                            <ReactRouterDOM.Route path="/calc" component={PrecoIdeal} />
-                        </ReactRouterDOM.Switch>
-                    </ReactRouterDOM.HashRouter>
-                );
-            }
+                    {erro && <div className="text-red-500 text-center">{erro}</div>}
+                    {resultado && (
+                        <div className="text-green-500 text-center">
+                            <strong>Preço Ideal:</strong> R$ {resultado}
+                        </div>
+                    )}
+                </div>
+            );
+        }
 
-            // Renderização
-            ReactDOM.render(<App />, document.getElementById('root'));
-        </script>
-    </div>
+        // Componente Principal
+        function App() {
+            return (
+                <div className="flex flex-col items-center justify-center min-h-screen">
+                    <PrecoIdeal />
+                </div>
+            );
+        }
+
+        // Renderização
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
 </html>
